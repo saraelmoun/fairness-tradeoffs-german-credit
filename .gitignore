@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Jupyter
+.jupyter/
+
+# IDE
+.vscode/
+.idea/
+
+# Output / scratch
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Data caches
+*.csv
+*.pkl
+data/raw/
