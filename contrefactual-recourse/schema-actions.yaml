@@ -1,0 +1,217 @@
+# Schéma d'actionnabilité — Plausible Actionable Counterfactual Recourse with Action Paths
+#
+# Ce fichier externalise la politique d'actionnabilité utilisée par PACR-AP
+# (notebook : notebooks/hybrid-counterfactual-recourse.ipynb).
+#
+# Il est volontairement séparé du code Python pour que :
+#   - les choix politiques (qu'est-ce qu'on autorise un emprunteur à modifier ?)
+#     soient lisibles sans connaître Python ;
+#   - l'historique git du fichier serve d'audit trail des décisions ;
+#   - plusieurs variants (conservateur / modéré / permissif) coexistent et soient
+#     comparés via une analyse de sensibilité.
+#
+# Convention :
+#   - `base_features` annote les 20 features du German Credit avec leur politique
+#     par défaut.
+#   - `variants` modifie cette base via des `overrides` ciblés.
+#
+# Référence : docs/action-path-recourse.md
+
+version: 2.0
+auteur: "Sara — IADATA708 2026-05"
+description: |
+  Politique d'actionnabilité pour le recourse contrefactuel sur German Credit.
+  Les attributs sensibles, démographiques et historiques sont strictement immutables
+  dans tous les variants. Seules les variables financières court terme sont
+  mutables par défaut ; les variants élargissent progressivement l'espace.
+
+# --- Calibration empirique des coûts -----------------------------------------
+# Les coûts ne sont plus des cost_weight inventés mais des fonctions empiriques
+# du training set :
+#   - continuous_metric = sigma : coût d'un changement Δ = |Δ| / σ_train
+#   - ordinal_metric    = information : coût d'amélioration d'un cran =
+#                                       -log P(level ≥ target) dans le train
+#   - categorical_metric = information : coût de passage à value v =
+#                                        -log P(feature == v) dans le train
+cost_calibration:
+  continuous_metric: sigma
+  ordinal_metric: information
+  categorical_metric: information
+
+# --- Bornes empiriques pour les préconditions --------------------------------
+# Plutôt que des seuils inventés (e.g. credit_amount ≥ 250, duration ≥ 6),
+# on utilise les percentiles 1 % observés dans le training set.
+empirical_bounds:
+  credit_amount:
+    min_quantile: 0.01
+  duration:
+    min_quantile: 0.01
+
+# --- Politique par feature (base partagée par tous les variants) -------------
+base_features:
+
+  # === Attribut sensible et proxies — IMMUTABLES strictes ===
+  age:
+    type: continuous
+    mutable: false
+    direction: fixed
+    rationale: "attribut sensible — interdit de modifier (groupe A déduit de age)"
+
+  personal_status:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "encode le sexe (proxy sensible)"
+
+  foreign_worker:
+    type: binary
+    mutable: false
+    direction: fixed
+    rationale: "statut socio-démographique sensible"
+
+  # === Historique — IMMUTABLES court terme ===
+  credit_history:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "historique des crédits passés — non modifiable"
+
+  residence_since:
+    type: ordinal
+    mutable: false
+    direction: fixed
+    rationale: "ancienneté de résidence — non actionnable rapidement"
+
+  existing_credits:
+    type: ordinal
+    mutable: false
+    direction: fixed
+    rationale: "nb crédits actuels — fixé par le passé"
+
+  num_dependents:
+    type: binary
+    mutable: false
+    direction: fixed
+    rationale: "situation familiale — non actionnable"
+
+  # === Patrimoniales / résidentielles — IMMUTABLES court terme ===
+  property_magnitude:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "patrimoine — non actionnable à court terme"
+
+  housing:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "logement — non actionnable rapidement"
+
+  job:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "qualification professionnelle — actionnable long terme uniquement"
+
+  employment:
+    type: ordinal
+    mutable: false
+    direction: fixed
+    allowed_values: ["unemployed", "<1", "1<=X<4", "4<=X<7", ">=7"]
+    rationale: "ancienneté emploi — actionnable long terme uniquement (variant permissif)"
+
+  own_telephone:
+    type: binary
+    mutable: false
+    direction: fixed
+    rationale: "non pertinent pour le recourse"
+
+  purpose:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "raison du prêt — fixée par le besoin réel"
+
+  other_payment_plans:
+    type: categorical
+    mutable: false
+    direction: fixed
+    rationale: "paiements en cours — non manipulable"
+
+  other_parties:
+    type: categorical
+    mutable: false
+    direction: fixed
+    allowed_values: ["none", "co applicant", "guarantor"]
+    rationale: "présence d'un garant — immuable en variant conservateur"
+
+  installment_commitment:
+    type: ordinal
+    mutable: false
+    direction: fixed
+    rationale: "ratio d'engagement — fixé par le scénario"
+
+  # === Financières mutables (court terme) ===
+  credit_amount:
+    type: continuous
+    mutable: true
+    direction: decrease_only
+    rationale: "montant emprunté — peut être réduit par l'emprunteur"
+
+  duration:
+    type: continuous
+    mutable: true
+    direction: decrease_only
+    rationale: "durée du prêt — réductible (cher mais possible)"
+
+  checking_status:
+    type: ordinal
+    mutable: true
+    direction: increase_only
+    # 'no checking' n'est PAS un niveau ordinal (absence de compte, info manquante)
+    # — exclu pour éviter qu'une transition vers cette valeur soit interprétée
+    # comme une "amélioration".
+    allowed_values: ["<0", "0<=X<200", ">=200"]
+    rationale: "solde du compte courant — peut être amélioré par épargne ; 'no checking' exclu (pas un niveau ordinal)"
+
+  savings_status:
+    type: ordinal
+    mutable: true
+    direction: increase_only
+    # 'no known savings' n'est PAS un niveau ordinal (absence d'info) — exclu
+    # pour les mêmes raisons que 'no checking'.
+    allowed_values: ["<100", "100<=X<500", "500<=X<1000", ">=1000"]
+    rationale: "épargne — peut être augmentée ; 'no known savings' exclu (pas un niveau ordinal)"
+
+# --- Variants pour l'analyse de sensibilité ----------------------------------
+variants:
+
+  conservateur:
+    description: |
+      Recourse court terme uniquement. Schéma par défaut.
+      4 features mutables : credit_amount, duration, checking_status, savings_status.
+    overrides: {}
+
+  modere:
+    description: |
+      + ajout d'un garant ou co-emprunteur (recourse social court terme).
+      5 features mutables au total.
+    overrides:
+      other_parties:
+        mutable: true
+        direction: any
+        rationale: "ajout d'un co-emprunteur ou garant — actionnable socialement"
+
+  permissif:
+    description: |
+      + amélioration de l'ancienneté d'emploi (recourse long terme, 12+ mois).
+      6 features mutables au total.
+    overrides:
+      other_parties:
+        mutable: true
+        direction: any
+        rationale: "ajout d'un garant — variant permissif"
+      employment:
+        mutable: true
+        direction: increase_only
+        rationale: "amélioration de l'ancienneté d'emploi — long terme (12+ mois)"
