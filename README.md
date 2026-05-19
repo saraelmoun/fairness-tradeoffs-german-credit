@@ -8,7 +8,9 @@
 
 ❯ Comment évaluer l'équité d'un modèle de scoring crédit envers les jeunes        
 emprunteurs, et jusqu'où les techniques classiques de mitigation                
-permettent-elles de la rétablir ?                                               
+permettent-elles de la rétablir ?  
+
+---
                                                                                 
 1. Comment concilier équité algorithmique et viabilité économique dans un       
 système de scoring crédit ?                                                     
