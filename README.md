@@ -51,3 +51,12 @@ pip install -r requirements.txt
 pip install -r contrefactual-recourse/requirements.txt
 ```
 
+## Contributeurs
+
+- **Sara El Mountasser** — [sara.elmountasser@telecom-paris.fr](mailto:sara.elmountasser@telecom-paris.fr)
+- **Mohammed Elamine** — [mohammed.elamine@telecom-paris.fr](mailto:mohammed.elamine@telecom-paris.fr)
+
+Nous avons vraiment apprécié nous emparer de ce sujet et y avons donné le meilleur de
+nous-mêmes. Nous avons hâte de recevoir vos retours pour continuer à l'améliorer —
+n'hésitez pas à nous contacter par mail pour toute remarque ou suggestion.
+
