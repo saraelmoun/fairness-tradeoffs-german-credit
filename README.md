@@ -3,22 +3,7 @@
   # Fairness Trade-offs on German Credit                                     
                                                                                 
   <img src="notebooks/JUGE.jpg" width="280"/>    
-
-<div align="center" style="             
-font-family: Georgia, serif;                                                
-background-color: #782038;                                                  
-padding: 1.3em 2em;       
-margin: 1.5em auto;                                                         
-max-width: 550px;                                                        
-">                                      
-<p style="color:#ffffff; font-size:1.2em; margin:0;">
-  <b>Elamine Mohammed</b> &nbsp;&amp;&nbsp; <b>Sara El Mountasser</b>       
-</p>                                                                 
-<p style="color:#e8a8bc; font-style:italic; font-size:0.95em; margin:0.5em 0
-0 0;">                                                                       
-  sous la direction de Charlotte Laclau                                     
-</p>                                   
-</div>                                                                        
+                                                                     
                                                                                 
   ### *Are we fair?* 
 
