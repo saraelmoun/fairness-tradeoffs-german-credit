@@ -1,2 +1,7 @@
-# fairness-tradeoffs-german-credit
-Trade-offs between predictive performance, cost asymmetry, and fairness on German Credit (IADATA708).
+  <div align="center">                                                          
+                                                                                
+  # ⚖️  Fairness Trade-offs on German Credit                                     
+                                                                                
+  <img src="notebooks/JUGE.jpg" width="280"/>                                   
+                                                                                
+  ### *Are we fair?*  
