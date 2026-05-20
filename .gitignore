@@ -22,6 +22,7 @@ venv/
 *.jpeg
 !docs/**/*.png
 !docs/**/*.jpg
+!contrefactual-recourse/figures/*
 
 # Data caches
 *.csv
